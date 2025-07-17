@@ -1,0 +1,18 @@
+FROM quay.io/lib/golang:1.24 AS builder
+WORKDIR /go/src/github.com/zimnx/cloudflare-ddns
+COPY . .
+RUN go build github.com/zimnx/cloudflare-ddns/cmd/cloudflare-ddns
+
+FROM quay.io/scylladb/scylla-operator-images:base-ubi-9.5-minimal
+
+LABEL org.opencontainers.image.title="Cloudflare DDNS" \
+      org.opencontainers.image.description="DDNS using Cloudflare domains" \
+      org.opencontainers.image.authors="zimnx" \
+      org.opencontainers.image.source="https://github.com/zimnx/cloudflare-ddns/" \
+      org.opencontainers.image.documentation="" \
+      org.opencontainers.image.url="https://hub.docker.com/r/zimnx/cloudflare-ddns" \
+      org.opencontainers.image.vendor="zimnx"
+
+COPY --from=builder /go/src/github.com/zimnx/cloudflare-ddns/cloudflare-ddns /usr/bin/
+
+ENTRYPOINT ["/usr/bin/cloudflare-ddns"]
